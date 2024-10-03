@@ -14,6 +14,10 @@ public class FileUploadForm  {
     @PartType(MediaType.APPLICATION_OCTET_STREAM)
     public InputStream docFile;
 
+    @FormParam("fileSubReport")
+    @PartType(MediaType.APPLICATION_OCTET_STREAM)
+    public InputStream docFileSubReport;
+
     @FormParam("fieldsJson")
     @PartType(MediaType.APPLICATION_JSON)
     public Map<String, String> fieldsJson;
@@ -24,6 +28,10 @@ public class FileUploadForm  {
 
     public InputStream getDocFile() {
         return docFile;
+    }
+
+    public InputStream getDocFileSubReport() {
+        return docFileSubReport;
     }
 
     public Map<String, String> getFieldsJson() {

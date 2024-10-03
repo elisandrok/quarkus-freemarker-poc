@@ -45,19 +45,31 @@ public class DocumentController {
             InputStream docxInputStream = form.getDocFile();
             // 1. Carregar o documento Word
             XWPFDocument document = new XWPFDocument(docxInputStream);
-
+            
             // 2. Processar placeholders com Freemarker
             FreemarkerProcessorService freemarkerProcessor = new FreemarkerProcessorService();
             freemarkerProcessor.processTemplate(document, form.getFieldsJson(), form.getRulesJson());
-
             // 3. Converter para PDF usando LibreOffice (modo headless)
             File pdfFile = LibreOfficeConverterService.convertToPDF(document);
+            File subReportPdfFile = new File("subReport.pdf");
 
-            if (pdfFile == null || !pdfFile.exists()) {
+            if (form.getDocFileSubReport() != null && form.getDocFileSubReport().available() > 0) {
+                XWPFDocument subReportDocument = new XWPFDocument(form.getDocFileSubReport());
+                // Processar o subrelatório aqui
+                freemarkerProcessor.processTemplate(subReportDocument, form.getFieldsJson(), form.getRulesJson());
+                subReportPdfFile = LibreOfficeConverterService.convertToPDF(subReportDocument);
+            }
+
+            byte[] mergedPdf = LibreOfficeConverterService.unifyDocuments(pdfFile, subReportPdfFile);
+
+
+            if (mergedPdf == null || mergedPdf.length == 0) {
                 throw new IOException("Falha ao gerar o arquivo PDF");
             }
 
-            return Response.ok(pdfFile)
+            LibreOfficeConverterService.deleteFile(pdfFile);
+            LibreOfficeConverterService.deleteFile(subReportPdfFile);
+            return Response.ok(mergedPdf)
                 .header("Content-Disposition", "attachment; filename=\"generated_document.pdf\"")
                 .build();
         } catch (IOException e) {

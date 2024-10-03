@@ -5,13 +5,17 @@ import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.poi.wp.usermodel.HeaderFooterType;
+import org.apache.poi.xwpf.usermodel.ParagraphAlignment;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFFooter;
 import org.apache.poi.xwpf.usermodel.XWPFHeader;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
 import org.apache.poi.xwpf.usermodel.XWPFTable;
 import org.apache.poi.xwpf.usermodel.XWPFTableCell;
 import org.apache.poi.xwpf.usermodel.XWPFTableRow;
+import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSimpleField;
 
 @ApplicationScoped
 public class FreemarkerProcessorService {
@@ -33,6 +37,8 @@ public class FreemarkerProcessorService {
                 }
             }
         }
+
+        addPageNumbering(document);
     }
 
     private void processHeaders(XWPFDocument document, Map<String, String> fields) {
@@ -44,25 +50,32 @@ public class FreemarkerProcessorService {
     }
 
     private void processHeaderParagraph(XWPFParagraph paragraph, Map<String, String> fields) {
-        String fullText = paragraph.getText();
-        String newText = replaceFields(fullText, fields);
-        
-        if (!fullText.equals(newText)) {
-            // Limpar o parágrafo existente
-            while (paragraph.getRuns().size() > 0) {
-                paragraph.removeRun(0);
+        List<XWPFRun> runs = paragraph.getRuns();
+        for (int i = 0; i < runs.size(); i++) {
+            XWPFRun run = runs.get(i);
+            if (run.getEmbeddedPictures().size() > 0) {
+                // Este run contém uma imagem, não o modificamos
+                continue;
             }
-            
-            // Adicionar o novo texto preservando a formatação original
-            XWPFRun run = paragraph.createRun();
-            run.setText(newText);
-            copyRunProperties(paragraph.getRuns().get(0), run);
+            if (run.getText(0) != null) {
+                String text = run.getText(0);
+                String newText = replaceFields(text, fields);
+                if (!text.equals(newText)) {
+                    // Criar um novo run com o texto substituído
+                    XWPFRun newRun = paragraph.insertNewRun(i);
+                    newRun.setText(newText);
+                    copyRunProperties(run, newRun);
+                    
+                    // Remover o run original
+                    paragraph.removeRun(i + 1);
+                }
+            }
         }
     }
 
     private void processParagraph(XWPFParagraph paragraph, Map<String, String> fields, Map<String, Boolean> rules) {
         String paragraphText = paragraph.getText();
-        if (shouldRemoveParagraph(paragraph, rules)) {
+        if (rules != null && shouldRemoveParagraph(paragraph, rules)) {
             while (paragraph.getRuns().size() > 0) {
                 paragraph.removeRun(0);
             }
@@ -102,9 +115,6 @@ public class FreemarkerProcessorService {
     }
 
     private boolean shouldRemoveParagraph(XWPFParagraph paragraph, Map<String, Boolean> rules) {
-        if (rules == null) {
-            return false;
-        }
         String text = paragraph.getText();
 
         // Verificar condições do tipo ${if(...)}
@@ -143,6 +153,37 @@ public class FreemarkerProcessorService {
         return text;
     }
 
+    public void addPageNumbering(XWPFDocument document) {
+        // Criar ou obter o rodapé para todas as páginas
+        XWPFFooter footer = document.createFooter(HeaderFooterType.DEFAULT);
+        
+        // Criar um parágrafo no rodapé
+        XWPFParagraph paragraph = footer.getParagraphArray(0);
+        if (paragraph == null) {
+            paragraph = footer.createParagraph();
+        }
+        paragraph.setAlignment(ParagraphAlignment.RIGHT);
+
+        // Adicionar o texto "Página "
+        XWPFRun run = paragraph.createRun();
+        run.setText("Página ");
+
+        // Adicionar o campo de número da página atual
+        insertField(paragraph, "PAGE");
+
+        // Adicionar o texto " de "
+        run = paragraph.createRun();
+        run.setText(" de ");
+
+        // Adicionar o campo de número total de páginas
+        insertField(paragraph, "NUMPAGES");
+    }
+
+    private void insertField(XWPFParagraph paragraph, String fieldName) {
+        CTSimpleField field = paragraph.getCTP().addNewFldSimple();
+        field.setInstr(" " + fieldName + " ");
+    }
+
     private void copyRunProperties(XWPFRun sourceRun, XWPFRun targetRun) {
         targetRun.setBold(sourceRun.isBold());
         targetRun.setItalic(sourceRun.isItalic());
@@ -153,6 +194,7 @@ public class FreemarkerProcessorService {
         if (fontSize != null) {
             targetRun.setFontSize(fontSize);
         }
+        targetRun.setTextPosition(sourceRun.getTextPosition());
         // Adicionar outras propriedades caso necessário
     }
 }
