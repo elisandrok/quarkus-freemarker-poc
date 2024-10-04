@@ -30,9 +30,6 @@ public class LibreOfficeConverterService {
             .start();
         process.waitFor();
 
-        // Aguardar um pouco para garantir que o sistema de arquivos sincronize
-        //Thread.sleep(2000);
-
         // Procurar o arquivo PDF na raiz do projeto
         String pdfFileName = tempDocFile.getName().replace(".docx", ".pdf");
         File pdfFile = new File(projectDir, pdfFileName);
