@@ -171,7 +171,6 @@ public class FreemarkerProcessorService {
         // Adicionar o campo de número da página atual
         insertField(paragraph, "PAGE");
 
-        // Adicionar o texto " de "
         run = paragraph.createRun();
         run.setText(" de ");
 
