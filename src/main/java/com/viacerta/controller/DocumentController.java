@@ -73,12 +73,12 @@ public class DocumentController {
                 .header("Content-Disposition", "attachment; filename=\"generated_document.pdf\"")
                 .build();
         } catch (IOException e) {
-            e.printStackTrace(); // Log detalhado do erro
+            e.printStackTrace(); 
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                 .entity("Erro ao processar o arquivo: " + e.getMessage())
                 .build();
         } catch (Exception e) {
-            e.printStackTrace(); // Log detalhado do erro
+            e.printStackTrace();
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                 .entity("Erro inesperado: " + e.getMessage())
                 .build();
