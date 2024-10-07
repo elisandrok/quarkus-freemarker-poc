@@ -19,9 +19,12 @@ import org.openxmlformats.schemas.wordprocessingml.x2006.main.CTSimpleField;
 
 @ApplicationScoped
 public class FreemarkerProcessorService {
+    private static final String DEFAULT_FONT = "Times New Roman";
+
     public void processTemplate(XWPFDocument document, Map<String, String> fields, Map<String, Boolean> rules) {
         // Processar cabeçalhos
         processHeaders(document, fields);
+
         // Processar parágrafos
         for (XWPFParagraph paragraph : document.getParagraphs()) {
             processParagraph(paragraph, fields, rules);
@@ -188,7 +191,7 @@ public class FreemarkerProcessorService {
         targetRun.setItalic(sourceRun.isItalic());
         targetRun.setUnderline(sourceRun.getUnderline());
         targetRun.setColor(sourceRun.getColor());
-        targetRun.setFontFamily(sourceRun.getFontFamily());
+        targetRun.setFontFamily(DEFAULT_FONT);
         Double fontSize = sourceRun.getFontSizeAsDouble();
         if (fontSize != null) {
             targetRun.setFontSize(fontSize);

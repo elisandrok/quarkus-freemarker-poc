@@ -43,13 +43,13 @@ public class DocumentController {
                                .build();
             }
             InputStream docxInputStream = form.getDocFile();
-            Carregar o documento Word
+            //Carregar o documento Word
             XWPFDocument document = new XWPFDocument(docxInputStream);
             
-            Processar placeholders com Freemarker
+            //Processar placeholders com Freemarker
             FreemarkerProcessorService freemarkerProcessor = new FreemarkerProcessorService();
             freemarkerProcessor.processTemplate(document, form.getFieldsJson(), form.getRulesJson());
-            Converter para PDF usando LibreOffice (modo headless)
+            //Converter para PDF usando LibreOffice (modo headless)
             File pdfFile = LibreOfficeConverterService.convertToPDF(document);
             File subReportPdfFile = new File("subReport.pdf");
 
