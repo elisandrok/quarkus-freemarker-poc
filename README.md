@@ -10,7 +10,7 @@ Tecnologias Utilizadas:
 
 Funcionalidades:
 
-    Recebe templates .odt ou .docx.
+    Recebe templates .docx.
     Substitui variáveis dentro dos documentos usando dados dinâmicos.
     Retorna o documento gerado em formato PDF.
 
