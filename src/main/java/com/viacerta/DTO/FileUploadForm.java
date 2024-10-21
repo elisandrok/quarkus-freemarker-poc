@@ -20,7 +20,7 @@ public class FileUploadForm  {
 
     @FormParam("fieldsJson")
     @PartType(MediaType.APPLICATION_JSON)
-    public Map<String, String> fieldsJson;
+    public Map<String, Object> fieldsJson;
 
     @FormParam("rulesJson")
     @PartType(MediaType.APPLICATION_JSON)
@@ -34,7 +34,7 @@ public class FileUploadForm  {
         return docFileSubReport;
     }
 
-    public Map<String, String> getFieldsJson() {
+    public Map<String, Object> getFieldsJson() {
         return fieldsJson;
     }
 

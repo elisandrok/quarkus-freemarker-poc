@@ -11,12 +11,13 @@ import org.apache.pdfbox.io.MemoryUsageSetting;
 import org.apache.pdfbox.multipdf.PDFMergerUtility;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
+import jakarta.enterprise.context.ApplicationScoped;
+
+@ApplicationScoped
 public class LibreOfficeConverterService {
-    public static File convertToPDF(XWPFDocument document) throws Exception {
+    public File convertToPDF(XWPFDocument document) throws Exception {
         // Obter o diretório do projeto
         String projectDir = System.getProperty("user.dir");
-        
-        // Criar arquivo temporário .docx na raiz do projeto
         File tempDocFile = new File(projectDir, "temp_" + System.currentTimeMillis() + ".docx");
         
         try (FileOutputStream out = new FileOutputStream(tempDocFile)) {
@@ -26,7 +27,7 @@ public class LibreOfficeConverterService {
         // Comando para converter usando LibreOffice
         String[] command = {"libreoffice", "--headless", "--convert-to", "pdf", tempDocFile.getAbsolutePath()};
         Process process = new ProcessBuilder(command)
-            .directory(new File(projectDir)) // Definir diretório de trabalho
+            .directory(new File(projectDir)) 
             .start();
         process.waitFor();
 
@@ -49,7 +50,7 @@ public class LibreOfficeConverterService {
         return pdfFile;
     }
 
-    public static byte[] unifyDocuments(File mainPdf, File subReportPdf) throws IOException {
+    public byte[] unifyDocuments(File mainPdf, File subReportPdf) throws IOException {
         PDFMergerUtility pdfMerger = new PDFMergerUtility();
         pdfMerger.addSource(new FileInputStream(mainPdf));
         if (subReportPdf != null && subReportPdf.exists()) { 

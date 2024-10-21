@@ -149,7 +149,7 @@ public class FreemarkerProcessorService {
 
     private String replaceFields(String text, Map<String, String> fields) {
         for (Map.Entry<String, String> entry : fields.entrySet()) {
-            String placeholder = "{{" + entry.getKey() + "}}";
+            String placeholder = "${" + entry.getKey() + "}";
             String value = entry.getValue() != null ? entry.getValue() : "";
             text = text.replace(placeholder, value);
         }
